@@ -11,6 +11,7 @@ const session = require('koa-session');
 
 const responseHandler = require('./middlewares/responseHandler');
 const login = require('./middlewares/login');
+const context = require('./middlewares/context');
 const config = require('./config/config.default');
 const index = require('./routes/index');
 const users = require('./routes/users');
@@ -30,15 +31,12 @@ app.use(require('koa-static')(__dirname + '/public'));
 app.use(views(__dirname + '/views', {
   extension: 'pug'
 }));
+// 封装Joi
+app.use(context);
 app.use(responseHandler);
 app.use(login);
+app.keys = ['124erf23rf3rf123wa123gt3w3r'];
 app.use(session(config.session, app));
-
-// 封装Joi
-app.use(async(ctx, next) => {
-  ctx.Joi = Joi;
-  await next();
-});
 
 // routes
 app.use(index.routes()).use(index.allowedMethods());

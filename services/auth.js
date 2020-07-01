@@ -14,7 +14,7 @@ class AuthService {
     if (user.password === md5(password)) {
       ctx.session[config.login.LOGIN_FIELD] = user;
       // 调用 rotateCsrfSecret 刷新用户的 CSRF token
-      ctx.rotateCsrfSecret();
+      // ctx.rotateCsrfSecret();
       return { msg: '登录成功' };
     }
     ctx.code = 1;

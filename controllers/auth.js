@@ -6,7 +6,7 @@ class AuthController {
   // 登录验证
   static async login(ctx) {
     // 参数校验
-    const data = ctx.Joi.validate({
+    const data = ctx.validate({
       username: ctx.Joi.string().min(3).max(24)
         .required(),
       password: ctx.Joi.string().min(6).max(24)
