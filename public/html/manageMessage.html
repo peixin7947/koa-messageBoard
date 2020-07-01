@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>留言板</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <link rel="stylesheet" href="/static/amis/sdk.css"/>
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="root" class="app-wrapper"></div>
+<script src="/static/amis/sdk.js"></script>
+<script src="component.js"></script>
+<script type="text/javascript">
+  (function() {
+    const amis = amisRequire('amis/embed');
+    // 管理留言页面
+    amis.embed('#root', {
+      'type': 'page',
+      'title': '留言管理',
+      'initApi': 'get:/api/information',
+      'reload': 'test',
+      // 工具栏区域， 存放了导航栏按钮
+      'toolbar': [
+        nav,
+      ],
+      'body': [
+        {
+          'type': 'tabs',
+          'activeKey': 'tab1',
+          'tabs': [
+            {
+              'title': '你的留言',
+              'hash': 'tab1',
+              'reload': true,
+              'body': {
+                'type': 'crud',
+                'title': '',
+                'initFetch': true,
+                'name':'messageList',
+                'affixHeader': false,
+                'api': {
+                  'method': 'get',
+                  'url': '/api/message/${_id}',
+                  'data': {
+                    'pageSize': 6,
+                    'pageIndex': '$pageIndex',
+                  }
+                },
+                'syncLocation': false,
+                'orderField': 'weight',
+                'perPageField': 'pageSize',
+                'pageField': 'pageIndex',
+                'defaultParams': {
+                  'pageSize': 6
+                },
+                'headerToolbar': [
+                  'bulk-actions',
+                  'pagination',
+                ],
+                'placeholder': '当前没有留言',
+                'columns': [
+                  messageCrudFrom,
+                  {
+                    'type': 'button-toolbar',
+                    'label': '操作',
+                    'buttons': [
+                      {
+                        'type': 'button',
+                        'actionType': 'dialog',
+                        // 创建者可以编辑
+                        'hiddenOn': 'userId != creator._id',
+                        'label': '编辑',
+                        'level': 'info',
+                        'reload': 'messageList', // 刷新crud内容
+                        'dialog': {
+                          'title': '编辑',
+                          'body': {
+                            'type': 'form',
+                            'mode': 'horizontal',
+                            'api': {
+                              'url': '/api/message',
+                              'method': 'put',
+                              'data': {
+                                'content': '${content}',
+                                'title': '${title}',
+                                'id': '${_id}'
+                              },
+                              'headers': {
+                                'x-csrf-token': getCookie('csrfToken'),
+                              },
+                            },
+                            'actions': [
+                              {
+                                'type': 'submit',
+                                'label': '提交',
+                                'primary': true
+                              }
+                            ],
+                            'controls': [
+                              {
+                                'type': 'text',
+                                'label': '标题',
+                                'name': 'title',
+                                // 如果是评论则没有标题
+                                // 'hiddenOn': 'data.title == undefined',
+                                'required': true,
+                                'validations': {
+                                  'maxLength': 30,
+                                  'notEmptyString': true,
+                                },
+                                'validationErrors': {
+                                  'maxLength': '标题不能超过30个字符哦',
+                                  'notEmptyString': '请勿输入空白内容',
+                                }
+                              },
+                              {
+                                'type': 'textarea',
+                                'label': '内容：',
+                                'name': 'content',
+                                'validations': {
+                                  'maxLength': 1024,
+                                  'notEmptyString': true,
+                                },
+                                'validationErrors': {
+                                  'maxLength': '不能超过1024个字符哦',
+                                  'notEmptyString': '请勿输入空白内容',
+                                }
+                              },
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        'level': 'info',
+                        'label': '删除',
+                        // 创建者可以删除
+                        // 'hiddenOn': 'userId != creator._id',
+                        'type': 'button',
+                        'actionType': 'ajax',
+                        'confirmText': '确定删除留言？',
+                        'api': {
+                          'url': '/api/message',
+                          'method': 'delete',
+                          'data': {
+                            'id': '${_id}',
+                          },
+                          'headers': {
+                            'x-csrf-token': getCookie('csrfToken'),
+                          },
+                        },
+                      },
+                    ]
+                  },
+                ],
+              },
+            },
+            {
+              'title': '你的评论',
+              'hash': 'tab2',
+              'reload': true,
+              'body': {
+                'type': 'crud',
+                'name': 'replyList',
+                'initFetch': true,
+                'title': '',
+                'affixHeader': false,
+                'api': {
+                  'method': 'get',
+                  'url': '/api/reply/${_id}',
+                  'data': {
+                    'pageSize': 6,
+                    'pageIndex': '$pageIndex',
+                  }
+                },
+                'syncLocation': false,
+                'orderField': 'weight',
+                'perPageField': 'pageSize',
+                'pageField': 'pageIndex',
+                'defaultParams': {
+                  'pageSize': 6
+                },
+                'headerToolbar': [
+                  'bulk-actions',
+                  'pagination',
+                ],
+                'placeholder': '当前没有评论',
+                'columns': [
+                  messageCrudFrom,
+                  {
+                    'type': 'button-toolbar',
+                    'label': '操作',
+                    'buttons': [
+                      {
+                        'type': 'button',
+                        'actionType': 'dialog',
+                        // 创建者可以编辑
+                        'hiddenOn': 'userId != creator._id',
+                        'label': '编辑',
+                        'level': 'info',
+                        'reload': 'replyList', // 刷新crud内容
+                        'dialog': {
+                          'title': '编辑',
+                          'body': {
+                            'type': 'form',
+                            'mode': 'horizontal',
+                            'api': {
+                              'url': '/api/message',
+                              'method': 'put',
+                              'data': {
+                                'content': '${content}',
+                                'id': '${_id}'
+                              },
+                            'headers': {
+                              'x-csrf-token': getCookie('csrfToken'),
+                            },
+                            },
+                            'actions': [
+                              {
+                                'type': 'submit',
+                                'label': '提交',
+                                'primary': true
+                              }
+                            ],
+                            'controls': [
+                              {
+                                'type': 'textarea',
+                                'label': '内容：',
+                                'name': 'content',
+                                'validations': {
+                                  'maxLength': 1024,
+                                  'notEmptyString': true,
+                                },
+                                'validationErrors': {
+                                  'maxLength': '不能超过1024个字符哦',
+                                  'notEmptyString': '请勿输入空白内容',
+                                }
+                              },
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        'level': 'info',
+                        'label': '删除',
+                        // 创建者可以删除
+                        'hiddenOn': 'userId != creator._id',
+                        'type': 'button',
+                        'actionType': 'ajax',
+                        'confirmText': '确定删除留言？',
+                        'api': {
+                          'url': '/api/message',
+                          'method': 'delete',
+                          'data': {
+                            'id': '${_id}',
+                          },
+                          'headers': {
+                            'x-csrf-token': getCookie('csrfToken'),
+                          },
+                        },
+                      },
+                    ]
+                  },
+                ],
+              },
+            },
+          ]
+        },
+      ]
+    });
+  })();
+</script>
+</body>
+</html>

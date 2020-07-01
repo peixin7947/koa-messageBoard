@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>留言板</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <link rel="stylesheet" href="/static/amis/sdk.css"/>
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="root" class="app-wrapper"></div>
+<script src="/static/amis/sdk.js"></script>
+<script src="component.js"></script>
+<script type="text/javascript">
+  (function() {
+    const amis = amisRequire('amis/embed');
+    // 注册页面
+    amis.embed('#root', {
+      'type': 'page',
+      'title': '留言板',
+      'initApi': '',
+      'body': {
+        'type': 'form',
+        'reload': 'window',
+        'api': {
+          'method': 'post',
+          'url': '/register',
+          'data': {
+            'username': '${username}',
+            'password': '${password}',
+            'rePassword': '${rePassword}'
+          },
+          'headers': {
+            'x-csrf-token': getCookie('csrfToken'),
+          }
+        },
+        'submitText': '',
+        'title': '注册用户',
+        'className': 'm-xl',
+        'mode': 'horizontal',
+        'horizontal': {
+          'left': 'col-sm-4',
+          'right': 'col-sm-5',
+        },
+        'controls': [
+          {
+            'type': 'text',
+            'name': 'username',
+            'required': true,
+            'placeholder': '请输入一个3到24个字符的用户名',
+            'label': '用户名',
+            'size': 'full',
+            'validations': {
+              'minLength': 3,
+              'maxLength': 24,
+              'notEmptyString': true,
+            },
+            'validationErrors': {
+              'minLength': '用户名最少为3个字符',
+              'maxLength': '用户名最多为24个字符',
+              'notEmptyString': '请勿输入空字符',
+            },
+          },
+          {
+            'type': 'password',
+            'name': 'password',
+            'label': '密码',
+            'required': true,
+            'placeholder': '请输入一个6到24个字符的密码',
+            'size': 'full',
+            'validations': {
+              'minLength': 6,
+              'maxLength': 24,
+              'notEmptyString': true,
+            },
+            'validationErrors': {
+              'minLength': '密码最少为6个字符',
+              'maxLength': '密码最多为24个字符',
+              'notEmptyString': '请勿输入空字符',
+            },
+          },
+          {
+            'type': 'password',
+            'name': 'rePassword',
+            'label': '确认密码',
+            'required': true,
+            'placeholder': '请再次输入密码',
+            'size': 'full',
+            'validations': {
+              'equalsField': 'password',
+            },
+            'validationErrors': {
+              'equalsField': '两次输入的密码不一致',
+            },
+          },
+          {
+            'type': 'button-toolbar',
+            'buttons': [
+              {
+                'type': 'submit',
+                'btnClassName': 'btn-default',
+                'label': '注册',
+              },
+              {
+                'label': '返回登录',
+                'type': 'button',
+                'level': 'info',
+                'actionType': 'link',
+                'link': '/html/login.html'
+              }
+            ]
+          },
+        ]
+      }
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>留言板</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <link rel="stylesheet" href="/static/amis/sdk.css"/>
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="root" class="app-wrapper"></div>
+<script src="/static/amis/sdk.js"></script>
+<script src="component.js"></script>
+<script type="text/javascript">
+  (function() {
+    const amis = amisRequire('amis/embed');
+
+    amis.embed('#root', {
+      'type': 'page',
+      'title': '个人信息',
+      'initApi': `get:/api/information`,
+      'toolbar': [
+        nav,
+      ],
+      'body': [
+        {
+          'type': 'form',
+          'panelClassName': 'panel-primary',
+          'mode': 'horizontal',
+          'name': 'informationForm',
+          'title': '',
+          'initApi': `get:/api/information`,
+          'initFetch': false,
+          'submitText': '',
+          'silentPolling': 'true',
+          'actions': [
+            updateInformationBtn,
+            updatePasswordBtn,
+          ],
+          'controls': [
+            {
+              'type': 'static-tpl',
+              'label': '用户名',
+              'tpl': '${username}'
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '昵称',
+              'tpl': '${nickname| default: 暂无}'
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-image',
+              'label': '头像',
+              'name': 'image',
+              'src': '${avatar}',
+              'popOver': {
+                'title': '查看大图',
+                'body': '<div class="w-xxl"><img class="w-full" src="${avatar}"/></div>'
+              }
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '性别',
+              'tpl': '${sex|isEquals:1:\'男\':\'女\' | default:暂无}',
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '邮箱',
+              'tpl': '${email | default: 暂无}',
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '年龄',
+              'tpl': '${age | default: 暂无}',
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '个人签名',
+              'tpl': '${intro | default: 暂无}',
+            },
+            {
+              'type': 'divider'
+            },
+            {
+              'type': 'static-tpl',
+              'label': '创建日期',
+              'tpl': '<%= formatDate(data.createTime, \'YYYY-MM-DD\') %>',
+            },
+          ]
+        },
+      ]
+    });
+  })();
+</script>
+</body>
+</html>
