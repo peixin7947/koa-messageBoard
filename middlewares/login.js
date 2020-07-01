@@ -7,6 +7,5 @@ async function login(ctx, next) {
   }
   // 若未登录，则进行拦截
   ctx.throw(200, '未登录,请先进行登录');
-  // return ctx.redirect('/');
 };
 module.exports = login;
