@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const sendToWormhole = require('stream-wormhole');
+const userServices = require('../services/user');
+const User = require('../models/user');
 
 class UserController {
   // 注册用户
@@ -20,7 +22,10 @@ class UserController {
 
   // 获取当前用户的个人信息
   static async getUserInformation(ctx) {
-    ctx.response.body = await ctx.service.user.getUserInformation();
+    const userInfo = ctx.session.userInfo;
+    const user = await User.findOne({ _id: userInfo._id }).lean();
+    user.userId = user._id;
+    ctx.response.body = user;
   }
 
   // 更新当前用户的个人信息
@@ -36,7 +41,7 @@ class UserController {
       password: ctx.Joi.string().min(6).max(24),
       oldPassword: ctx.Joi.string().min(6).max(24)
     }, Object.assign(ctx.request.body, ctx.query, ctx.params).all);
-    ctx.response.body = await ctx.service.user.updateUserInformation(data);
+    ctx.response.body = await userServices.updateUserInformation(ctx, data);
   }
 
   /**
@@ -45,12 +50,13 @@ class UserController {
      */
   static async uploadAvatar(ctx) {
     // 获取上传的文件
-    const stream = await ctx.getFileStream();
+    const file = ctx.request.files.file;
+    const stream = fs.createReadStream(file.path);
     // stream对象也包含了文件名，大小等基本信息
     const filename = '/static/uploadAvatar/' + new Date().getTime() +
-            '-' + Math.floor(Math.random() * 100000) + '-' + stream.filename;
+            '-' + Math.floor(Math.random() * 100000) + '-' + file.name;
     // 创建文件写入路径
-    const target = path.join('./app/public', filename);
+    const target = path.join('./public', filename);
     try {
       // 创建文件写入流
       const fileStream = fs.createWriteStream(target);
@@ -59,8 +65,9 @@ class UserController {
     } catch (e) {
       // 必须将上传的文件流消费掉，要不然浏览器响应会卡死
       await sendToWormhole(stream);
+      ctx.code = 1;
       ctx.body = { msg: '上传头像失败' };
-      // ctx.throw(400, e);
+      return;
     }
     ctx.body = { url: filename };
   }
@@ -69,7 +76,7 @@ class UserController {
   static async updateUserPassword(ctx) {
     // 参数校验
     const data = ctx.validate({
-      id: ctx.helper.validateObj('_id').require(),
+      id: ctx.helper.validateObj('_id').required(),
       password: ctx.Joi.string().min(6).max(18),
       newPassword: ctx.Joi.string().min(6).max(18)
     }, Object.assign(ctx.request.body, ctx.query, ctx.params));
