@@ -1,6 +1,7 @@
 'use strict';
 
 const authServices = require('../services/auth');
+const userServices = require('../services/user');
 const User = require('../models/user');
 
 class AuthController {
